@@ -29,13 +29,14 @@ async function run() {
 
         const db = client.db('futureboxDB')
         const eventsCollection = db.collection('events')
+        const joinedEventsCollection = db.collection('joined-events')
 
 
         // events related apis
         app.post('/events', async (req, res) => {
             console.log(req.body);
-            const newProduct = req.body
-            const result = await eventsCollection.insertOne(newProduct)
+            const newEvent = req.body
+            const result = await eventsCollection.insertOne(newEvent)
             res.send(result)
         })
 
@@ -51,6 +52,24 @@ async function run() {
             res.send(result)
         })
 
+
+        // joined related apis
+        app.post('/joined-events', async (req, res) => {
+            const newJoinedEvent = req.body
+            const result = await joinedEventsCollection.insertOne(newJoinedEvent)
+            res.send(result)
+        })
+
+        app.get('/joined-events', async (req, res) => {
+            const email = req.query.email
+            const query = {}
+            if(email){
+                query.joinerEmail = email
+            }
+            const cursor = joinedEventsCollection.find(query).sort({date: 1})
+            const result = await cursor.toArray()
+            res.send(result)
+        })
 
 
 
