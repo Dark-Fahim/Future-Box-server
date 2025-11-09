@@ -14,43 +14,52 @@ const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}
 
 
 const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
+    serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+    }
 });
 
 async function run() {
-  try {
-    // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    try {
+        // Connect the client to the server	(optional starting in v4.7)
+        await client.connect();
 
 
-    const db = client.db('futureboxDB')
-    const eventsCollection = db.collection('events')
+        const db = client.db('futureboxDB')
+        const eventsCollection = db.collection('events')
 
 
-    // events related apis
-    app.post('/events', async (req, res) => {
-        
-    })
+        // events related apis
+        app.post('/events', async (req, res) => {
+            console.log(req.body);
+            const newProduct = req.body
+            const result = await eventsCollection.insertOne(newProduct)
+            res.send(result)
+        })
+
+        app.get('/events', async (req, res) => {
+            const cursor = eventsCollection.find().sort({ date: 1 })
+            const result = await cursor.toArray()
+            res.send(result)
+        })
 
 
 
 
 
-    // Send a ping to confirm a successful connection
-    // await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  } 
+        // Send a ping to confirm a successful connection
+        // await client.db("admin").command({ ping: 1 });
+        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    }
 
 
 
-  finally {
-    // Ensures that the client will close when you finish/error
-    
-  }
+    finally {
+        // Ensures that the client will close when you finish/error
+
+    }
 }
 run().catch(console.dir);
 
