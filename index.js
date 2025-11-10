@@ -93,7 +93,13 @@ async function run() {
             const result = await eventsCollection.updateOne(query, update, options)
             res.send(result)
         })
-
+        
+        app.delete('/events/:id', async (req, res) => {
+            const id = req.params.id
+            const query = {_id: new ObjectId(id)}
+            const result = await eventsCollection.deleteOne(query)
+            res.send(result)
+        })
 
 
 
