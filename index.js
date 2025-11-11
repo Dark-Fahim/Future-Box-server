@@ -64,12 +64,6 @@ async function run() {
             const result = await eventsCollection.insertOne(newEvent)
             res.send(result)
         })
-
-        app.get('/events', async (req, res) => {
-            const cursor = eventsCollection.find().sort({ date: 1 })
-            const result = await cursor.toArray()
-            res.send(result)
-        })
         app.get('/events/:id', async (req, res) => {
             const id = req.params.id
             const query = { _id: new ObjectId(id) }
@@ -78,17 +72,26 @@ async function run() {
         })
 
         app.get('/events', async (req, res) => {
-            const title = req.query.title;
-            const query = {}
-            if (title) {
-                query.title = title
-            }
-            const cursor = eventsCollection.find(query).sort({ date: 1 })
-            const result = await cursor.toArray()
+            
+            const { eventType, title } = req.query;
+            const query = {};
+            if (eventType) query.eventType = eventType;
+            if (title && title.trim() !== '') query.title = { $regex: title, $options: "i" };
+            const pipeline = [
+                { $match: query },
+                {
+                    $project: {
+                        title: 1, eventType: 1, date: 1, description: 1, thumbnail: 1,
+                        creatorEmail: 1
+                    }
+                },
+                { $sort: { date: 1 } }
+            ];
+            const result = await eventsCollection.aggregate(pipeline).toArray();
             res.send(result)
         })
 
-        
+
 
 
 
@@ -143,14 +146,14 @@ async function run() {
 
 
 
-        
+
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     }
 
 
 
     finally {
-        
+
 
     }
 }
