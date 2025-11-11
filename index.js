@@ -1,14 +1,15 @@
+require('dotenv').config()
 const express = require('express')
 const cors = require('cors');
 const app = express()
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000
-require('dotenv').config()
 
 const admin = require("firebase-admin");
 
-const serviceAccount = require("./social-development.json");
-
+// const serviceAccount = require("./social-development.json");
+const decoded = Buffer.from(process.env.FIREBASE_SERVICE_KEY, "base64").toString("utf8");
+const serviceAccount = JSON.parse(decoded);
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 });
@@ -16,13 +17,13 @@ admin.initializeApp({
 app.use(express.json())
 app.use(cors())
 
-const verifyFirebaseToken = async (req, res, next)=> {
-    if(!req.headers.authorization){
-        return res.status(401).send({message: "401 Unauthorized Access"})
+const verifyFirebaseToken = async (req, res, next) => {
+    if (!req.headers.authorization) {
+        return res.status(401).send({ message: "401 Unauthorized Access" })
     }
     const token = req.headers.authorization.split(" ")[1]
-    if(!token){
-        return res.status(401).send({message: "401 Unauthorized Access"})
+    if (!token) {
+        return res.status(401).send({ message: "401 Unauthorized Access" })
     }
 
     try {
@@ -48,7 +49,7 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
 
 
         const db = client.db('futureboxDB')
@@ -86,6 +87,9 @@ async function run() {
             const result = await cursor.toArray()
             res.send(result)
         })
+
+        
+
 
 
         // joined related apis
@@ -129,7 +133,7 @@ async function run() {
             res.send(result)
         })
 
-        app.delete('/events/:id',verifyFirebaseToken, async (req, res) => {
+        app.delete('/events/:id', verifyFirebaseToken, async (req, res) => {
             const id = req.params.id
             const query = { _id: new ObjectId(id) }
             const result = await eventsCollection.deleteOne(query)
@@ -139,15 +143,14 @@ async function run() {
 
 
 
-        // Send a ping to confirm a successful connection
-        // await client.db("admin").command({ ping: 1 });
+        
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     }
 
 
 
     finally {
-        // Ensures that the client will close when you finish/error
+        
 
     }
 }
