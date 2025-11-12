@@ -59,7 +59,7 @@ async function run() {
 
         // events related apis
         app.post('/events', async (req, res) => {
-            console.log(req.body);
+            
             const newEvent = req.body
             const result = await eventsCollection.insertOne(newEvent)
             res.send(result)
@@ -120,6 +120,13 @@ async function run() {
             }
             const cursor = eventsCollection.find(query).sort({ date: 1 })
             const result = await cursor.toArray()
+            res.send(result)
+        })
+        app.get('/manage-events/:id', async (req, res) => {
+            const id = req.params.id
+            const email = req.params.email
+            const query = { _id: new ObjectId(id), creatorEmail: email }
+            const result = await eventsCollection.findOne(query)
             res.send(result)
         })
 
